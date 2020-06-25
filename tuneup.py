@@ -5,20 +5,29 @@
 Use the timeit and cProfile libraries to find bad code.
 """
 
-__author__ = "???"
+__author__ = "hpost2019"
 
 import cProfile
 import pstats
-import functools
+from pstats import SortKey
+import timeit
 
 
 def profile(func):
     """A cProfile decorator function that can be used to
     measure performance.
     """
-    # Be sure to review the lesson material on decorators.
-    # You need to understand how they are constructed and used.
-    raise NotImplementedError("Complete this decorator function")
+    def profiled_func(*args, **kwargs):
+        profiler = cProfile.Profile()
+        try:
+            profiler.enable()
+            result = func(*args, **kwargs)
+            profiler.disable()
+            return result
+        finally:
+            ps = pstats.Stats(profiler).sort_stats(SortKey.CUMULATIVE)
+            ps.print_stats()
+    return profiled_func
 
 
 def read_movies(src):
@@ -31,25 +40,29 @@ def read_movies(src):
 def is_duplicate(title, movies):
     """Returns True if title is within movies list."""
     for movie in movies:
-        if movie.lower() == title.lower():
+        if movie == title:
             return True
     return False
 
 
+@profile
 def find_duplicate_movies(src):
     """Returns a list of duplicate movies from a src list."""
     movies = read_movies(src)
     duplicates = []
     while movies:
         movie = movies.pop()
-        if is_duplicate(movie, movies):
+        if movie in movies:
             duplicates.append(movie)
     return duplicates
 
 
 def timeit_helper():
     """Part A: Obtain some profiling measurements using timeit."""
-    # YOUR CODE GOES HERE
+    t = timeit.Timer(stmt=main)
+    results = t.repeat(repeat=7, number=3)
+    min_value = min([result/3 for result in results])
+    print('Best time accross 7 repeats of 3 runs per repeat: ', min_value)
     pass
 
 
