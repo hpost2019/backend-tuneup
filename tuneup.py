@@ -11,6 +11,7 @@ import cProfile
 import pstats
 from pstats import SortKey
 import timeit
+from collections import Counter
 
 
 def profile(func):
@@ -49,17 +50,15 @@ def is_duplicate(title, movies):
 def find_duplicate_movies(src):
     """Returns a list of duplicate movies from a src list."""
     movies = read_movies(src)
-    duplicates = []
-    while movies:
-        movie = movies.pop()
-        if movie in movies:
-            duplicates.append(movie)
+    duplicates = Counter()
+    for movie in movies:
+        duplicates[movie] += 1
     return duplicates
 
 
-def timeit_helper():
+def timeit_helper(func):
     """Part A: Obtain some profiling measurements using timeit."""
-    t = timeit.Timer(stmt=main)
+    t = timeit.Timer(stmt=func)
     results = t.repeat(repeat=7, number=3)
     min_value = min([result/3 for result in results])
     print('Best time accross 7 repeats of 3 runs per repeat: ', min_value)
@@ -68,9 +67,13 @@ def timeit_helper():
 
 def main():
     """Computes a list of duplicate movie entries."""
+    dups = []
     result = find_duplicate_movies('movies.txt')
-    print(f'Found {len(result)} duplicate movies:')
-    print('\n'.join(result))
+    for k, v in result.items():
+        if v > 1:
+            dups.append(k)
+    print(f'Found {len(dups)} duplicate movies:')
+    print('\n'.join(dups))
 
 
 if __name__ == '__main__':
